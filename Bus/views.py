@@ -3,8 +3,4 @@ from django.http import HttpResponse
 # Create your views here.
 
 def home(request):
-    return HttpResponse("Hello, world. You're at the polls page.")
-def login(request):
-    return HttpResponse("Hello, world. You're at the polls page.")
-def admin(request):
-    return HttpResponse("Hello, world. You're at the polls page.")
+    return HttpResponse(home)

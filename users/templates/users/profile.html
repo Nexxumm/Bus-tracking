@@ -1,0 +1,30 @@
+{% extends 'Bus/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="content-section">
+  <div class="media">
+    <div class="media-body">
+      <h2 class="account-heading"> {{user.username}}</h2>
+      <p class="text-secondary">{{user.email}}</p>
+      <p class="text-secondary">Wallet Balance : {{user.Profile.wallet_balance}}</p>
+    </div>
+  </div>
+</div>
+
+<div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Profile Info</legend>
+            {{ u_form }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Update Profile</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

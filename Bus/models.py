@@ -16,8 +16,7 @@ class Profile(models.Model):
 
 class Day(models.Model):
     name = models.CharField(max_length=10)
-    # 0 - monday
-    number = models.IntegerField(unique=True)
+    number = models.IntegerField(unique=True) # 0 is monday
 
     def __str__(self):
         return self.name

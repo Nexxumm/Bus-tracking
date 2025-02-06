@@ -1,2 +1,2 @@
 # Bus-tracking
-A simple bus tracking system written in Django
+A simple bus tracking system written using Django 

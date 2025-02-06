@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Available Buses</h2>
+<div class="sort-controls">
+    <a href="?sort=departure">Sort by Departure Time</a>
+    <a href="?sort=price">Sort by Price</a>
+</div>
+
+{% for bus in buses %}
+<div class="bus-card">
+    <h3>{{ bus.departure_point }} to {{ bus.destination }}</h3>
+    <p>Departure: {{ bus.departure_time }}</p>
+    <p>Fare: ${{ bus.base_fare }}</p>
+    <p>Available Seats: {{ bus.get_available_seats }}</p>
+    <a href="{% url 'create_booking' bus.id %}" class="btn">Book Now</a>
+</div>
+{% empty %}
+<p>No buses found for your search criteria.</p>
+{% endfor %}
+{% endblock %}

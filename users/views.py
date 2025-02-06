@@ -1,7 +1,9 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from .forms import UserRegisterForm , UserUpdateForm
+from django.utils import timezone
+from Bus.models import Booking
+from .forms import *
 from django.contrib.auth.decorators import login_required
 
 def register(request):
@@ -21,21 +23,29 @@ def login(request):
 @login_required(login_url='login')
 def profile(request):
 
-    if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        if u_form.is_valid():
-            u_form.save()
-            messages.success(request, f'Your account has been updated!')
-            return redirect('profile')
-    else:
-        u_form = UserUpdateForm(instance=request.user)
-
     context = {
-            'u_form': u_form
-        }
-
-
-    context = {
-        'u_form': u_form,
+        'upcoming_trips' : request.user.Bookings.filter(
+            travel_date__gte=timezone.now().date(),
+            status = 'Accepted',
+        ),
+        'past_trips' : request.user.Bookings.filter(
+            travel_date__lte=timezone.now().date(),
+        )
     }
-    return render(request, 'users/profile.html')
+
+
+    return render(request, 'users/profile.html', context)
+
+
+@login_required
+def wallet_topup(request):
+    if request.method == 'POST':
+        form = WalletTopupForm(request.POST , user=request.user)
+        if form.is_valid():
+            request.user.wallet_balance += form.cleaned_data['amount']
+            request.user.save()
+            return redirect('dashboard')
+    else:
+        form = WalletTopupForm(user=request.user)
+
+    return render(request, 'accounts/wallet_topup.html', {'form': form})

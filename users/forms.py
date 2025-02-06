@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import MinValueValidator
+
 from Bus.models import Profile
 
 class UserRegisterForm(UserCreationForm):
@@ -17,12 +19,20 @@ class UserUpdateForm(forms.ModelForm):
         model = User
         fields = ['username', 'email']
 
-class AddToWalletForm(forms.ModelForm):
-    wallet = forms.IntegerField()
-    class Meta:
-        model = Profile
-        fields = ['wallet_balance']
 
+class WalletTopupForm(forms.Form):
+    amount = forms.IntegerField(
+        label="Top-up Amount",
+        validators=[MinValueValidator(1)],
+        widget=forms.NumberInput(attrs={'step': '1'}) # steps of 1 INR
+    )
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_amount(self):
+        amount = self.cleaned_data['amount'] # clean amount
+        return amount
 
 

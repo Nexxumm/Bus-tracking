@@ -1,5 +1,5 @@
 {% extends 'Bus/base.html' %}
-{% load crispy_forms_tags %}
+
 
 {% block content %}
 
@@ -8,23 +8,35 @@
     <div class="media-body">
       <h2 class="account-heading"> {{user.username}}</h2>
       <p class="text-secondary">{{user.email}}</p>
-      <p class="text-secondary">Wallet Balance : {{user.Profile.wallet_balance}}</p>
+      <p class="text-secondary">Wallet Balance : {{request.user.profile.wallet_balance}}</p>
     </div>
   </div>
 </div>
 
 <div>
 
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-            <legend class="border-bottom mb-4">Profile Info</legend>
-            {{ u_form }}
-        </fieldset>
-        <div class="form-group">
-            <button class="btn btn-outline-info" type="submit">Update Profile</button>
-        </div>
-    </form>
+<h2>Upcoming Trips</h2>
+{% for trip in upcoming_trips %}
+<div class="trip">
+    <p>Bus: {{ trip.bus }}</p>
+    <p>Date: {{ trip.travel_date }}</p>
+    <p>Cost: {{ trip.total_cost }}</p>
+</div>
+{% empty %}
+<p>No upcoming trips.</p>
+{% endfor %}
+
+<h2>Past Trips</h2>
+{% for trip in past_trips %}
+<div class="trip">
+    <p>Bus: {{ trip.bus }}</p>
+    <p>Date: {{ trip.travel_date }}</p>
+    <p>Cost: {{ trip.total_cost }}</p>
+</div>
+{% empty %}
+<p>No past trips.</p>
+{% endfor %}
+
 </div>
 
 {% endblock content %}

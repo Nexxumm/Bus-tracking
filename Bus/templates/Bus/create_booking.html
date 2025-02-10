@@ -1,0 +1,22 @@
+{% extends 'Bus/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="GET" >
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Book a Bus</legend>
+                {{ form|crispy }}
+                <div class="ticket-form">
+                    {{ form.tickets.management_form|crispy }}
+                </div>
+                </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Search Buses</button>
+            </div>
+            </fieldset>
+        </form>
+    </div>
+
+
+{% endblock content%}

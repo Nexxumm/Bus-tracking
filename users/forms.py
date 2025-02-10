@@ -24,7 +24,6 @@ class WalletTopupForm(forms.Form):
     amount = forms.IntegerField(
         label="Top-up Amount",
         validators=[MinValueValidator(1)],
-        widget=forms.NumberInput(attrs={'step': '1'}) # steps of 1 INR
     )
 
     def __init__(self, *args, **kwargs):

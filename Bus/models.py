@@ -1,7 +1,7 @@
 from datetime import timedelta
-
+import pyotp
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -25,6 +25,29 @@ class Day(models.Model):
     def __str__(self):
         return self.name
 
+
+class SeatClass(models.Model):
+    CLASS_CHOICES = [
+        ('GENERAL', 'General'),
+        ('SLEEPER', 'Sleeper'),
+        ('LUXURY', 'Luxury'),
+    ]
+    name = models.CharField(max_length=20, choices=CLASS_CHOICES, unique=True)
+    fare_multiplier = models.DecimalField(max_digits=3, decimal_places=2, default=1.0)
+
+
+
+class BusSeatClass(models.Model):
+    bus = models.ForeignKey('Bus', on_delete=models.CASCADE, related_name='bus_seat_classes')
+    seat_class = models.ForeignKey(SeatClass, on_delete=models.CASCADE)
+    total_seats = models.PositiveIntegerField()
+    booked_seats = models.PositiveIntegerField(default=0)
+
+    @property
+    def available_seats(self):
+        return self.total_seats - self.booked_seats
+
+
 class Bus(models.Model):
     number = models.CharField(max_length=50)
     departure = models.CharField(max_length=50)
@@ -35,6 +58,7 @@ class Bus(models.Model):
     arrival_time = models.TimeField()
     is_active = models.BooleanField(default=True)
     scheduled_days = models.ManyToManyField(Day, through='BusSchedule')
+    seat_classes = models.ManyToManyField(SeatClass, through=BusSeatClass)
 
     def is_scheduled_on_date(self, date):
         return self.scheduled_days.filter(number=date.weekday()).exists()
@@ -69,6 +93,12 @@ class Booking(models.Model):
     booking_time = models.DateTimeField(auto_now_add=True)
     total_cost = models.PositiveIntegerField()
     status = models.CharField(choices=STATUS_CHOICES, default='ACCEPTED', max_length=10)
+    seat_class = models.ForeignKey(SeatClass, on_delete=models.PROTECT, blank=True, null=True)
+    num_seats = models.PositiveIntegerField(default=1)
+
+    @property
+    def num_passengers(self):
+        return self.tickets.count()
 
     def __str__(self):
         return f"{self.id}by {self.user.username}"
@@ -81,10 +111,18 @@ class Booking(models.Model):
 
     def cancel(self):
         if self.status == Booking.status.ACCEPTED and self.can_be_cancelled():
-            self.user.wallet_balance += self.total_cost
-            self.user.save()
-            self.status = Booking.status.REJECTED
-            self.save()
+            with transaction.atomic():
+                bus_seat_class = BusSeatClass.objects.select_for_update().get(
+                    bus = self.bus,
+                    seat_class=self.tickets.first().seat_class
+                )
+                bus_seat_class.booked_seats -= self.tickets.count()
+                bus_seat_class.save()
+
+                self.user.profile.wallet_balance += self.total_cost
+                self.user.profile.save()
+                self.status = Booking.status.REJECTED
+                self.save()
 
     def save(self):
         if not self.bus.is_scheduled_on_date(self.travel_date):
@@ -97,10 +135,33 @@ class Booking(models.Model):
 
 
 
+
+
 class Ticket(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE,related_name='tickets')
     passenger_name = models.CharField(max_length=50)
     passenger_age = models.PositiveIntegerField()
+    seat_class = models.ForeignKey(SeatClass, on_delete=models.PROTECT,null=True)
 
     def __str__(self):
         return f"{self.passenger_name} ({self.passenger_age})"
+
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    secret = models.CharField(max_length=32)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def generate_otp(self):
+        totp = pyotp.TOTP(self.secret, interval=300)  # Expires in 5 minutes
+        return totp.now()
+
+    def is_valid(self, otp):
+        return pyotp.TOTP(self.secret).verify(otp) and timezone.now() < self.expires_at
+
+
+
+
+
+

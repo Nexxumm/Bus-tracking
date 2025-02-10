@@ -22,3 +22,14 @@ class Bus(admin.ModelAdmin):
                 booking.cancel()
             bus.is_active = False
             bus.save()
+from django.contrib import admin
+from .models import Bus, Day
+
+@admin.register(Bus)
+class BusAdmin(admin.ModelAdmin):
+    list_display = ('number', 'departure', 'destination', 'total_seats', 'fare')
+
+
+@admin.register(Day)
+class DayAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number')

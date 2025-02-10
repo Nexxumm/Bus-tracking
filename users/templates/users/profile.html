@@ -17,10 +17,16 @@
 
 <h2>Upcoming Trips</h2>
 {% for trip in upcoming_trips %}
-<div class="trip">
+<div class="booking-card">
     <p>Bus: {{ trip.bus }}</p>
     <p>Date: {{ trip.travel_date }}</p>
     <p>Cost: {{ trip.total_cost }}</p>
+    {% if trip.status == 'CONFIRMED' and trip.can_be_cancelled %}
+        <form action="{% url 'cancel_booking' trip.pk %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Cancel Booking</button>
+        </form>
+    {% endif %}
 </div>
 {% empty %}
 <p>No upcoming trips.</p>
@@ -28,7 +34,7 @@
 
 <h2>Past Trips</h2>
 {% for trip in past_trips %}
-<div class="trip">
+<div class="booking-card">
     <p>Bus: {{ trip.bus }}</p>
     <p>Date: {{ trip.travel_date }}</p>
     <p>Cost: {{ trip.total_cost }}</p>

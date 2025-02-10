@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import formset_factory
 from  django.utils import timezone
 from .models import *
 
@@ -49,3 +50,13 @@ class BookingForm(forms.ModelForm):
 
         return cleaned_data
 
+class PassengerForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    age = forms.IntegerField(min_value=1, max_value=100)
+
+PassengerFormSet = formset_factory(
+    PassengerForm,
+    extra=1,
+    min_num=1,
+    validate_min=True
+)

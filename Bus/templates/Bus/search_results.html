@@ -1,21 +1,38 @@
-{% extends 'base.html' %}
-
+{% extends 'Bus/base.html' %}
+{% load crispy_forms_tags %}
 {% block content %}
-<h2>Available Buses</h2>
-<div class="sort-controls">
-    <a href="?sort=departure">Sort by Departure Time</a>
-    <a href="?sort=price">Sort by Price</a>
+
+<div class="content-section">
+    <form method="GET" action="{% url 'search_results' %}">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Search for Bus</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Search Buses</button>
+        </div>
+    </form>
 </div>
 
-{% for bus in buses %}
-<div class="bus-card">
-    <h3>{{ bus.departure_point }} to {{ bus.destination }}</h3>
-    <p>Departure: {{ bus.departure_time }}</p>
-    <p>Fare: ${{ bus.base_fare }}</p>
-    <p>Available Seats: {{ bus.get_available_seats }}</p>
-    <a href="{% url 'create_booking' bus.id %}" class="btn">Book Now</a>
-</div>
-{% empty %}
+{% if buses %}
+<h3>Search Results</h3>
+<ul>
+    {% for bus in buses %}
+    <div class="bus-card">
+          <h3>{{ bus.departure_point }} → {{ bus.destination }}</h3>
+          {% for seat_class in bus.seat_classes.all %}
+          <div class="seat-class">
+            <span>{{ seat_class.seat_class.name }} Class</span>
+            <span>Available: {{ seat_class.available_seats }}</span>
+            <span>Fare: ₹{{ bus.base_fare|floatformat:2 }} × {{ seat_class.seat_class.fare_multiplier }} = ₹{{ seat_class.total_fare|floatformat:2 }}</span>
+            <a href="{% url 'book_seats' bus.id seat_class.seat_class.id %}">Book Now</a>
+          </div>
+          {% endfor %}
+    </div>
+    {% endfor %}
+    </ul>
+{% else %}
 <p>No buses found for your search criteria.</p>
-{% endfor %}
+{% endif %}
 {% endblock %}

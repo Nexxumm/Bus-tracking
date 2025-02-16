@@ -24,15 +24,20 @@ class TicketForm(forms.ModelForm):
 
 class BookingForm(forms.ModelForm):
     tickets = forms.formset_factory(TicketForm, extra=1, min_num=1)
+    seat_class = forms.ModelChoiceField(queryset=SeatClass.objects.none(), empty_label=None)
 
     class Meta:
         model = Booking
         fields = ['travel_date']
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        self.bus = kwargs.pop('bus', None)
+        bus = kwargs.pop('bus', None)
         super().__init__(*args, **kwargs)
+
+        if bus:
+            self.fields['seat_class'].queryset = SeatClass.objects.filter(
+                busseatclass__bus=bus
+            ).distinct()
 
     def clean(self):
         cleaned_data = super().clean()

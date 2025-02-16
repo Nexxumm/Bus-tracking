@@ -1,0 +1,9 @@
+{% extends 'Bus/base.html' %}
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="email_otp" placeholder="Email OTP" required>
+
+    <button type="submit">Verify OTP</button>
+</form>
+{% endblock content %}

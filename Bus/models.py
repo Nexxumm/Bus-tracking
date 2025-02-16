@@ -5,7 +5,6 @@ from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-# Create your models here.
 class Profile(models.Model):
     USER_TYPE_CHOICES = [
         ('CONSUMER', 'Consumer'),
@@ -14,7 +13,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_type = models.CharField(choices=USER_TYPE_CHOICES, max_length=10, default='PASSENGER')
     wallet_balance = models.PositiveIntegerField(default=0)
-
+    email_otp = models.CharField(max_length=6,null=True, blank=True)
     def __str__(self):
         return f"{self.user.username}({self.user_type})"
 
@@ -24,6 +23,26 @@ class Day(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BusStop(models.Model):
+    name = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    code = models.CharField(max_length=10 ,unique=True)
+
+class Route(models.Model):
+    name = models.CharField(max_length=100)
+    fare = models.PositiveIntegerField()
+    stops = models.ManyToManyField(BusStop, through='RouteStop')
+
+class RouteStop(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    stop = models.ForeignKey(BusStop, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['order']
+        unique_together = [('route','order'),('route', 'stop')]
 
 
 class SeatClass(models.Model):
@@ -88,7 +107,11 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
         related_name='bookings'
     )
+    google_id = models.CharField(max_length=255, blank=True, null=True)
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
+    start_stop = models.ForeignKey('BusStop',related_name='start_booking' ,on_delete=models.PROTECT)
+    end_stop = models.ForeignKey('BusStop',related_name='end_booking',on_delete=models.PROTECT)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10)
     travel_date = models.DateField()
     booking_time = models.DateTimeField(auto_now_add=True)
     total_cost = models.PositiveIntegerField()
@@ -145,21 +168,6 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"{self.passenger_name} ({self.passenger_age})"
-
-
-class OTP(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    secret = models.CharField(max_length=32)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-
-    def generate_otp(self):
-        totp = pyotp.TOTP(self.secret, interval=300)  # Expires in 5 minutes
-        return totp.now()
-
-    def is_valid(self, otp):
-        return pyotp.TOTP(self.secret).verify(otp) and timezone.now() < self.expires_at
-
 
 
 

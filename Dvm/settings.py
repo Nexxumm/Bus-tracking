@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'anymail',
+
 
 ]
 
@@ -163,12 +165,15 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_PROTOCOL = "https"
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'noreply@bussystem.com'
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+ANYMAIL = {
+    "BREVO_API_KEY": os.getenv('API_KEY'),
+}
+SITE_ID = 1
+
 

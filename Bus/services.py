@@ -6,15 +6,14 @@ from django.core.mail import send_mail
 from django.urls import reverse
 
 
-def create_booking(user, bus, seat_class, start_stop, end_stop, passengers_data, travel_date):
+def create_booking(user, bus, seat_class, start_stop, end_stop, passengers_data, travel_date, total_cost):
     with transaction.atomic():
         if not bus.is_scheduled_on_date(travel_date):
             raise ValueError("Invalid travel date")
 
         validate_seat_availability(bus, seat_class, len(passengers_data))
-        total_cost = bus.base_fare * seat_class.fare_multiplier * len(passengers_data)
 
-        if user.wallet_balance < total_cost:
+        if user.profile.wallet_balance  < total_cost:
                 raise ValueError("Not enough wallet balance")
 
         booking = Booking.objects.create(
@@ -24,6 +23,7 @@ def create_booking(user, bus, seat_class, start_stop, end_stop, passengers_data,
             start_stop=start_stop,
             end_stop=end_stop,
             total_cost=total_cost,
+            travel_date=travel_date,
 
         )
         Ticket.objects.bulk_create([
@@ -42,8 +42,8 @@ def create_booking(user, bus, seat_class, start_stop, end_stop, passengers_data,
         bus_seat_class.booked_seats += len(passengers_data)                 #assumes same seat class for all
         bus_seat_class.save()
 
-        user.wallet_balance -= total_cost
-        user.save()
+        user.profile.wallet_balance -= total_cost
+        user.profile.save()
 
     return booking
 

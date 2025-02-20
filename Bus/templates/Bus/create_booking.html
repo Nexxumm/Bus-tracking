@@ -2,17 +2,21 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="content-section">
-        <form method="GET" >
+        <form method="POST" >
             {% csrf_token %}
+             <!-- Hidden fields for required booking details -->
+            <input type="hidden" name="start_stop" value="{{ start_stop.id }}">
+            <input type="hidden" name="end_stop" value="{{ end_stop.id }}">
+            <input type="hidden" name="travel_date" value="{{ travel_date }}">
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Book a Bus</legend>
-                {{ form|crispy }}
-                <div class="ticket-form">
-                    {{ form.tickets.management_form|crispy }}
-                </div>
+                     {{ formset.management_form }}
+                    {% for form in formset %}
+                        {{ form|crispy }}
+                    {% endfor %}
                 </fieldset>
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Search Buses</button>
+                <button class="btn btn-outline-info" type="submit">Submit</button>
             </div>
             </fieldset>
         </form>

@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'anymail',
+    'import_export',
+    'nested_admin',
 
 
 ]

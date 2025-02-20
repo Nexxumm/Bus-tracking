@@ -20,18 +20,25 @@
 <ul>
     {% for bus in buses %}
     <div class="bus-card">
-          <h3>{{ bus.departure_point }} → {{ bus.destination }}</h3>
-          {% for seat_class in bus.seat_classes.all %}
+          <h3>{{ bus.departure }} → {{ bus.destination }}</h3>
+          {% for bus_seat in bus.bus_seat_classes.all %}
           <div class="seat-class">
-            <span>{{ seat_class.seat_class.name }} Class</span>
-            <span>Available: {{ seat_class.available_seats }}</span>
-            <span>Fare: ₹{{ bus.base_fare|floatformat:2 }} × {{ seat_class.seat_class.fare_multiplier }} = ₹{{ seat_class.total_fare|floatformat:2 }}</span>
-            <a href="{% url 'book_seats' bus.id seat_class.seat_class.id %}">Book Now</a>
+            <span>{{ bus_seat.seat_class.name }} Class</span>
+            <span>Available: {{ bus_seat.available_seats }}</span>
+            <span>
+                Fare: ₹{{ bus.fare|floatformat:0 }} ×
+                {{ bus_seat.seat_class.fare_multiplier }} =
+                ₹{{ bus_seat.total_fare|floatformat:2 }}
+            </span>
+              {% with seat_class_id=bus.seat_class.id|default:"1" %}
+            <a href="{% url 'create_booking' bus.id seat_class_id %}?start_stop={{ request.GET.from_city }}&end_stop={{ request.GET.to_city }}&travel_date={{ request.GET.date }}">
+                Book Now</a>
+              {% endwith %}
           </div>
           {% endfor %}
     </div>
     {% endfor %}
-    </ul>
+</ul>
 {% else %}
 <p>No buses found for your search criteria.</p>
 {% endif %}

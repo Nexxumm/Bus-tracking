@@ -30,7 +30,7 @@ class TicketForm(forms.ModelForm):
         fields = ['passenger_name', 'passenger_age']
 
 class BookingForm(forms.ModelForm):
-    tickets = forms.formset_factory(TicketForm, extra=1, min_num=1)
+    tickets = forms.formset_factory(TicketForm, extra=0, min_num=1)
     seat_class = forms.ModelChoiceField(queryset=SeatClass.objects.none(), empty_label=None)
 
     class Meta:

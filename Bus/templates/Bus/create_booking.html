@@ -2,25 +2,49 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="content-section">
-        <form method="POST" >
+        <form method="POST">
             {% csrf_token %}
-             <!-- Hidden fields for required booking details -->
             <input type="hidden" name="start_stop" value="{{ start_stop.id }}">
             <input type="hidden" name="end_stop" value="{{ end_stop.id }}">
             <input type="hidden" name="travel_date" value="{{ travel_date }}">
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Book a Bus</legend>
-                     {{ formset.management_form }}
+                {{ formset.management_form }}
+                <div id="form_set">
                     {% for form in formset %}
-                        {{ form|crispy }}
+                        <div class="booking-form">
+                            {{ form|crispy }}
+                        </div>
                     {% endfor %}
-                </fieldset>
-            <div class="form-group">
+                </div>
+                <button type="button" class="btn btn-secondary" id="add_more">Add Another Passenger</button>
+            </fieldset>
+            <div class="form-group mt-3">
                 <button class="btn btn-outline-info" type="submit">Submit</button>
             </div>
-            </fieldset>
         </form>
     </div>
 
+    <div id="empty_form" style="display:none">
+        {{ formset.empty_form.as_p }}
+    </div>
 
-{% endblock content%}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('add_more').addEventListener('click', function() {
+    const formCount = document.getElementById('id_form-TOTAL_FORMS');
+    const formNum = parseInt(formCount.value);
+    const newForm = document.getElementById('empty_form').innerHTML.replace(/__prefix__/g, formNum);
+
+    const formSetDiv = document.getElementById('form_set');
+    const newDiv = document.createElement('div');
+    newDiv.classList.add('booking-form');
+    newDiv.innerHTML = newForm;
+    formSetDiv.appendChild(newDiv);
+
+    formCount.value = formNum + 1;
+});
+</script>
+{% endblock %}

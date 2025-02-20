@@ -71,7 +71,7 @@ class BookingCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         # Only add formset if not already in context (e.g., when re-rendering after invalid form)
         if 'formset' not in context:
-            context['formset'] = PassengerFormSet()
+            context['formset'] = PassengerFormSet(initial=[{}])
         context['seat_class_id'] = self.kwargs.get('seat_class_id')
         context['start_stop'] = self.request.GET.get('start_stop')
         context['end_stop'] = self.request.GET.get('end_stop')

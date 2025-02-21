@@ -6,14 +6,22 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /usr/src/Dvm
 
-# Copy the requirements file into the container and install dependencies
-COPY requirements.txt /app/
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN apt-get update && apt-get install -y netcat
 
-# Copy the rest of your project code into the container
-COPY . /app/
+# install dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
 
-# Command to run the Django application with Gunicorn
-CMD ["gunicorn", "my_django_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+# copy entrypoint.sh
+COPY ./entrypoint.sh .
+RUN sed -i 's/\r$//g' /usr/src/Dvm/entrypoint.sh
+RUN chmod +x /usr/src/Dvm/entrypoint.sh
+
+# copy project
+COPY . .
+
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/Dvm/entrypoint.sh"]

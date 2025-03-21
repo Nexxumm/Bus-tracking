@@ -9,11 +9,11 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /usr/src/app
 
 # Copy the requirements file into the container and install dependencies
-COPY requirements.txt /app/
+COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copy the rest of your project code into the container
-COPY . /app/
+COPY . /
 
 # Command to run the Django application with Gunicorn
-CMD ["gunicorn", "my_django_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "Dvm.wsgi:application", "--bind", "0.0.0.0:8000"]
